@@ -1,0 +1,13 @@
+Build.PL
+lib/Test/Numeric.pm.PL
+lib/Test/Numeric.template
+MANIFEST			This list of files
+META.yml
+t/even_odd.t
+t/formatted.t
+t/integer.t
+t/number.t
+t/pod-coverage.t
+t/pod-synopsis.t
+t/pod-test.t
+t/template.t
