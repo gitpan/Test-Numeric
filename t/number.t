@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::Builder::Tester tests => 26;
+use Test::Builder::Tester tests => 32;
 use Test::More;
 
 # Test using the module.
@@ -18,6 +18,10 @@ ok( Test::Numeric::_test_number($_), "'$_' is a number" ) for qw(
   1.2e+3
   1.2e-3
   1.3e123
+  1.2E3
+  1.2E+3
+  1.2E-3
+  1.3E123
   -.2
 );
 
@@ -31,6 +35,8 @@ ok( !Test::Numeric::_test_number($_), "'$_' is not a number" ) for qw(
   1.2.3
   .
   .e2
+  .E2
+  12eE3
   ), '';
 
 test_out('ok 1 - foo');

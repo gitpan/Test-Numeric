@@ -5,7 +5,6 @@ use Module::Build;
 
 my $build = Module::Build->new(
     module_name       => "Test::Numeric",
-    dist_version_from => 'lib/Test/Numeric.template',
     license           => 'perl',
     requires          => {
         'Test::Builder' => 0,
@@ -23,3 +22,10 @@ my $build = Module::Build->new(
 );
 
 $build->create_build_script;
+
+# Create the test file for the pod in Numeric.pm
+eval "use Test::Inline";
+unless ( $@ ) {
+    # Test::Inline is available - create the tests.
+    system('pod2test lib/Test/Numeric.pm t/pod-inline.t');
+}

@@ -1,8 +1,10 @@
 --- #YAML:1.0
 name: Test-Numeric
-version: 0.1
+version: 0.2
 author:
   - Edmund von der Burg <evdb@ecclestoad.co.uk>
+  - |-
+    Bug reports, patches, suggestions etc are all welcomed.
 abstract: Testing utilities for numbers.
 license: perl
 requires:
@@ -16,5 +18,8 @@ build_requires:
   Test::More: 0
   Test::Pod: 0
 dynamic_config: 1
-provides: {}
+provides:
+  Test::Numeric:
+    file: lib/Test/Numeric.pm
+    version: 0.2
 generated_by: Module::Build version 0.25

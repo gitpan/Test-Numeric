@@ -4,7 +4,7 @@ use Carp;
 
 package Test::Numeric;
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
 
 use Test::Builder;
 require Exporter;
@@ -14,6 +14,7 @@ our @EXPORT = qw(
   is_integer isnt_integer
   is_even is_odd
   is_formatted isnt_formatted
+  is_money isnt_money
 );
 
 my $Test = Test::Builder->new;
@@ -34,7 +35,29 @@ Test::Numeric - Testing utilities for numbers.
 
 =head1 SYNOPSIS
 
-INSERT_FILE_HERE
+ use Test::Numeric tests => 8;
+
+ # The following functions are all exported by Test::Numeric
+
+=for example
+use Test::Numeric;
+
+=for example begin
+
+ is_number   '12.34e56',  "valid number";
+ is_number   '-12.34E56', "valid number";
+ isnt_number 'test',      "not a number";
+
+ is_even 2, "an even number";
+ is_odd  3, "an odd number";
+ 
+ is_integer   '123',    'an integer';
+ isnt_integer '123.45', 'not an integer';
+ 
+ is_formatted   '1-.2', '123.45';
+ isnt_formatted '1-.2', '123.4';
+
+=for example end
 
 =head1 DESCRIPTION
 
@@ -56,10 +79,10 @@ sub _test_number {
     return 1 if $number =~ m/^\d+$/;
 
     # Throw out obviously wrong things.
-    return 0 if $number =~ m/[^+\-\.e0-9]/;
+    return 0 if $number =~ m/[^+\-\.eE0-9]/;
 
     # Split the number into parts.
-    my ( $num, $e, $exp ) = split /(e)/, $number, 2;
+    my ( $num, $e, $exp ) = split /(e|E)/, $number, 2;
 
     # Check that the exponent is valid.
     if ($e) { return 0 unless $exp =~ m/^[+\-]?\d+$/; }
@@ -103,18 +126,26 @@ sub isnt_number {
 
 sub _test_integer {
     my $number = shift;
-    return 0 unless _test_number($number);
-    return int($number) == $number;
+    return undef unless _test_number($number);
+    return 1 if $number =~ m/^[+\-]?\d+\.?0*$/;
+    #return int($number) == $number;
+    return 0;
 }
 
 sub is_integer {
     my ( $test, $name ) = @_;
-    $Test->ok( _test_integer($test), $name );
+    my $result = _test_integer( $test );
+    $Test->diag("The value given is not a number - failing test.")
+	unless defined $result;
+    $Test->ok( defined $result && $result, $name );
 }
 
 sub isnt_integer {
     my ( $test, $name ) = @_;
-    $Test->ok( !_test_integer($test), $name );
+    my $result = _test_integer( $test );
+    $Test->diag("The value given is not a number - failing test.")
+	unless defined $result;
+    $Test->ok( defined $result && ! $result, $name );
 }
 
 =pod
@@ -123,11 +154,14 @@ sub isnt_integer {
 
  is_integer $number, $name;
 
-C<is_integer> tests if C<$number> is an integer, ie a whole number. Fails if the number is not a number r not a number at all.
+C<is_integer> tests if C<$number> is an integer, ie a whole
+number. Fails if the number is not a number r not a number at all.
 
 =item isnt_integer
 
-The opposite of C<is_integer>.
+The opposite of C<is_integer>. Note that C<isnt_integer> will fail if
+the number is not a number. So 'abc' may not be an integer but
+C<isnt_integer> will still fail.
 
 =cut
 
@@ -135,13 +169,13 @@ The opposite of C<is_integer>.
 
 sub _test_even {
     my $number = shift;
-    return 0 unless _test_integer($number);
+    return undef unless _test_integer($number);
     return $number % 2 == 0 ? 1 : 0;
 }
 
 sub _test_odd {
     my $number = shift;
-    return 0 unless _test_integer($number);
+    return undef unless _test_integer($number);
     return $number % 2 == 0 ? 0 : 1;
 }
 
@@ -161,14 +195,18 @@ As C<is_even>, but for odd numbers.
 
 sub is_even {
     my ( $test, $name ) = @_;
-
-    $Test->ok( _test_even($test), $name );
+    my $result = _test_even( $test );
+    $Test->diag('The number in not an integer - failing test.')
+	unless defined $result;
+    $Test->ok( defined $result && $result, $name );
 }
 
 sub is_odd {
     my ( $test, $name ) = @_;
-
-    $Test->ok( _test_odd($test), $name );
+    my $result = _test_odd( $test );
+    $Test->diag('The number in not an integer - failing test.')
+	unless defined $result;
+    $Test->ok( defined $result && $result, $name );
 }
 
 ################################################################################
@@ -257,15 +295,70 @@ of digits before the decimal place, and exactly two after.
 
 If the format is incorrect then the test will fail and a warning printed.
 
+This test is intended for things such as id numbers where the number must be something like C<000123>.
+
 =item isnt_formatted
 
 The same as is_formatted but negated.
+
+=cut 
+
+sub is_money {
+    my ( $test, $name ) = @_;
+    my $result = _test_formatted( '0-.2', $test );
+    $Test->ok( defined $result && $result, $name );
+}
+
+sub isnt_money {
+    my ( $test, $name ) = @_;
+    my $result = _test_formatted( '0-.2', $test );
+    $Test->ok( defined $result && ! $result, $name );
+}
+
+=pod
+
+=item is_money
+
+ is_money $number, $name;
+
+This is a conveniance function to test if the value looks like money,
+ie has a format of C<0-.2> - which is tw decimal points. Internally it
+just calls is_formatted with the correct format.
+
+=item isnt_money
+
+The opposite of C<is_money>.
+
+=back
+
+=head1 TODO
+
+=over
+
+=item *
+
+Create appropriate test names if none is given.
+
+=item *
+
+Add tests to see if a number looks like hex, octal, binary etc.
 
 =back
 
 =head1 AUTHOR
 
 Edmund von der Burg <evdb@ecclestoad.co.uk>
+
+Bug reports, patches, suggestions etc are all welcomed.
+
+=head1 COPYRIGHT
+
+Copyright 2004 by Edmund von der Burg <evdb@ecclestoad.co.uk>.  
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+See http://www.perl.com/perl/misc/Artistic.html
 
 =head1 SEE ALSO
 
