@@ -1,10 +1,9 @@
 use strict;
 use warnings;
-use Carp;
 
 package Test::Numeric;
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 
 use Test::Builder;
 require Exporter;

@@ -37,7 +37,7 @@ eval q{
   my $example = sub {
     local $^W = 0;
 
-#line 43 lib/Test/Numeric.pm
+#line 42 lib/Test/Numeric.pm
 use Test::Numeric;
 
 
@@ -59,7 +59,7 @@ use Test::Numeric;
 
   }
 };
-is($@, '', "example from line 43");
+is($@, '', "example from line 42");
 
     undef $main::_STDOUT_;
     undef $main::_STDERR_;
